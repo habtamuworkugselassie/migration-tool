@@ -1,8 +1,11 @@
 package com.client.migration.service;
 
+import com.client.migration.dto.ClientMigrationRequest;
 import com.client.migration.model.Client;
 import com.client.migration.repository.ClientRepository;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +19,13 @@ import java.util.List;
 @Service
 public class ClientService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
     private final ClientRepository clientRepository;
+    private final ExternalProductService externalProductService;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, ExternalProductService externalProductService) {
         this.clientRepository = clientRepository;
+        this.externalProductService = externalProductService;
     }
 
     @PostConstruct
@@ -47,9 +53,17 @@ public class ClientService {
             throw new IllegalStateException("Client already migrated");
         }
 
-        client.setMigrated(true);
-        clientRepository.save(client);
+        try {
+            ClientMigrationRequest migrationRequest = new ClientMigrationRequest(client.getId(), client.getName());
+            externalProductService.migrateClientToNewProduct(migrationRequest);
 
-        System.out.println("Migrated client " + id + " successfully");
+            client.setMigrated(true);
+            clientRepository.save(client);
+
+            logger.info("Successfully migrated client {} to new product", id);
+        } catch (Exception e) {
+            logger.error("Failed to migrate client {} to new product: {}", id, e.getMessage());
+            throw new RuntimeException("Migration failed: " + e.getMessage(), e);
+        }
     }
 }

@@ -22,6 +22,11 @@ spring:
 server:
   port: 8080
 
+migration:
+  new-product-api-url: ${NEW_PRODUCT_API_URL:http://localhost:8081/api/clients}
+  enable-external-migration: ${ENABLE_EXTERNAL_MIGRATION:true}
+  timeout-seconds: ${MIGRATION_TIMEOUT_SECONDS:30}
+
 logging:
   level:
     com.client.migration: DEBUG
