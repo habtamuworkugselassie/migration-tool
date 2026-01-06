@@ -2,6 +2,7 @@ package com.client.migration.service;
 
 import com.client.migration.config.MigrationProperties;
 import com.client.migration.dto.ClientMigrationRequest;
+import com.client.migration.exception.MigrationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -14,10 +15,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * Service for communicating with the external new product API.
+ * Handles HTTP requests to forward client data during migration.
+ *
  * @author habtamugebreselassie
- * Date: 06/01/2026
- * Time: 11:20
- * Service for communicating with external new product API
  */
 @Service
 public class ExternalProductService {
@@ -32,15 +33,22 @@ public class ExternalProductService {
         this.migrationProperties = migrationProperties;
     }
 
+    /**
+     * Migrates a client to the new product by calling the external API.
+     *
+     * @param request The client migration request containing client data
+     * @throws MigrationException if the migration fails
+     */
     public void migrateClientToNewProduct(ClientMigrationRequest request) {
-        if (!migrationProperties.isEnableExternalMigration()) {
 
+        if (!migrationProperties.isEnableExternalMigration()) {
             logger.info("External migration is disabled. Skipping API call for client: {}", request.getId());
             return;
         }
 
-        if (migrationProperties.getNewProductApiUrl() == null || migrationProperties.getNewProductApiUrl().isEmpty()) {
+        String apiUrl = migrationProperties.getNewProductApiUrl();
 
+        if (apiUrl == null || apiUrl.isEmpty()) {
             logger.warn("New product API URL is not configured. Skipping external migration for client: {}", request.getId());
             return;
         }
@@ -51,10 +59,10 @@ public class ExternalProductService {
 
             HttpEntity<ClientMigrationRequest> entity = new HttpEntity<>(request, headers);
 
-            logger.info("Calling new product API to migrate client: {} to URL: {}", request.getId(), migrationProperties.getNewProductApiUrl());
+            logger.info("Calling new product API to migrate client: {} to URL: {}", request.getId(), apiUrl);
 
             ResponseEntity<String> response = restTemplate.exchange(
-                    migrationProperties.getNewProductApiUrl(),
+                    apiUrl,
                     HttpMethod.POST,
                     entity,
                     String.class
@@ -63,13 +71,11 @@ public class ExternalProductService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 logger.info("Successfully migrated client {} to new product. Response: {}", request.getId(), response.getBody());
             } else {
-                throw new RuntimeException("Failed to migrate client to new product. Status: " + response.getStatusCode());
+                throw new MigrationException("Failed to migrate client to new product. Status: " + response.getStatusCode());
             }
         } catch (RestClientException e) {
-
-            logger.error("Error calling new product API for client {}: {}", request.getId(), e.getMessage());
-
-            throw new RuntimeException("Failed to migrate client to new product: " + e.getMessage(), e);
+            logger.error("Error calling new product API for client {}: {}", request.getId(), e.getMessage(), e);
+            throw new MigrationException("Failed to migrate client to new product: " + e.getMessage(), e);
         }
     }
 }

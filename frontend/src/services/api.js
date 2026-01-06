@@ -26,4 +26,3 @@ export const clientService = {
 
 export default api;
 
-

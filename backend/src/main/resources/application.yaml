@@ -24,7 +24,7 @@ server:
 
 migration:
   new-product-api-url: ${NEW_PRODUCT_API_URL:http://localhost:8081/api/clients}
-  enable-external-migration: ${ENABLE_EXTERNAL_MIGRATION:true}
+  enable-external-migration: ${ENABLE_EXTERNAL_MIGRATION:false}
   timeout-seconds: ${MIGRATION_TIMEOUT_SECONDS:30}
 
 logging:

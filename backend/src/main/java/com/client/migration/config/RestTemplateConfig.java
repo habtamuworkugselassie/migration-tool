@@ -6,17 +6,19 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * Configuration for RestTemplate bean used for external API calls.
+ *
  * @author habtamugebreselassie
- * Configuration for RestTemplate bean
  */
 @Configuration
 public class RestTemplateConfig {
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate(MigrationProperties migrationProperties) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(30000);
-        factory.setReadTimeout(30000);
+        int timeoutMs = migrationProperties.getTimeoutSeconds() * 1000;
+        factory.setConnectTimeout(timeoutMs);
+        factory.setReadTimeout(timeoutMs);
         return new RestTemplate(factory);
     }
 }

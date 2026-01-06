@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for client migration operations.
+ *
  * @author habtamugebreselassie
- * Date: 06/01/2026
- * Time: 10:49
  */
 @RestController
 @RequestMapping("/api")
@@ -23,18 +23,34 @@ public class ClientController {
         this.service = service;
     }
 
+    /**
+     * Retrieves all legacy clients that need to be migrated.
+     *
+     * @return List of legacy clients
+     */
     @GetMapping("/legacy-clients")
-    public List<Client> legacyClients() {
-        return service.getLegacyClients();
+    public ResponseEntity<List<Client>> getLegacyClients() {
+        return ResponseEntity.ok(service.getLegacyClients());
     }
 
+    /**
+     * Retrieves all clients that have been successfully migrated.
+     *
+     * @return List of migrated clients
+     */
     @GetMapping("/new-clients")
-    public List<Client> newClients() {
-        return service.getNewClients();
+    public ResponseEntity<List<Client>> getNewClients() {
+        return ResponseEntity.ok(service.getNewClients());
     }
 
+    /**
+     * Migrates a client from the legacy system to the new product.
+     *
+     * @param id The ID of the client to migrate
+     * @return ResponseEntity with success status
+     */
     @PostMapping("/migrate/{id}")
-    public ResponseEntity<?> migrate(@PathVariable Long id) {
+    public ResponseEntity<Void> migrateClient(@PathVariable Long id) {
         service.migrateClient(id);
         return ResponseEntity.ok().build();
     }

@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * Entity representing a client in the migration system.
+ *
  * @author habtamugebreselassie
- * Date: 06/01/2026
- * Time: 10:43
  */
 @Entity
 @Table(name = "clients")
@@ -19,10 +19,10 @@ public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false)
     private String name;
-    
+
     @Column(nullable = false)
     private boolean migrated = false;
 }
